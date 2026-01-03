@@ -1,0 +1,760 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CivicConnect | Grievance & Auto-Resolution Platform</title>
+    <style>
+        :root {
+            --primary: #2563eb;
+            --primary-dark: #1e40af;
+            --secondary: #64748b;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --background: #f8fafc;
+            --surface: #ffffff;
+            --text-main: #1e293b;
+            --text-light: #64748b;
+            --border: #e2e8f0;
+            --shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+            --radius: 0.75rem;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+        }
+
+        body {
+            background-color: var(--background);
+            color: var(--text-main);
+            line-height: 1.6;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* --- Layout & Typography --- */
+        header {
+            background-color: var(--surface);
+            border-bottom: 1px solid var(--border);
+            padding: 1rem 2rem;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--primary);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        nav a {
+            text-decoration: none;
+            color: var(--text-light);
+            margin-left: 1.5rem;
+            font-weight: 500;
+            transition: color 0.2s;
+        }
+
+        nav a:hover, nav a.active {
+            color: var(--primary);
+        }
+
+        main {
+            flex: 1;
+            max-width: 1200px;
+            width: 100%;
+            margin: 0 auto;
+            padding: 2rem;
+            display: grid;
+            grid-template-columns: 1fr 350px; /* Main content vs Sidebar */
+            gap: 2rem;
+        }
+
+        @media (max-width: 900px) {
+            main {
+                grid-template-columns: 1fr;
+                padding: 1rem;
+            }
+        }
+
+        h1, h2, h3 {
+            color: var(--text-main);
+            margin-bottom: 0.5rem;
+        }
+
+        p {
+            color: var(--text-light);
+            margin-bottom: 1rem;
+        }
+
+        /* --- Components --- */
+        .card {
+            background: var(--surface);
+            border-radius: var(--radius);
+            padding: 1.5rem;
+            box-shadow: var(--shadow);
+            border: 1px solid var(--border);
+            margin-bottom: 2rem;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.5rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: none;
+            gap: 0.5rem;
+        }
+
+        .btn-primary {
+            background-color: var(--primary);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background-color: var(--primary-dark);
+        }
+
+        .btn-block {
+            width: 100%;
+        }
+
+        /* --- Forms --- */
+        .form-group {
+            margin-bottom: 1.25rem;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+            font-size: 0.9rem;
+            color: var(--text-main);
+        }
+
+        input, select, textarea {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid var(--border);
+            border-radius: 0.5rem;
+            font-size: 1rem;
+            transition: border-color 0.2s;
+        }
+
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+        }
+
+        .file-upload-wrapper {
+            position: relative;
+            border: 2px dashed var(--border);
+            border-radius: var(--radius);
+            padding: 2rem;
+            text-align: center;
+            cursor: pointer;
+            transition: border-color 0.2s;
+        }
+
+        .file-upload-wrapper:hover {
+            border-color: var(--primary);
+            background-color: #f0f9ff;
+        }
+
+        #file-preview {
+            max-width: 100%;
+            max-height: 200px;
+            border-radius: 0.5rem;
+            margin-top: 1rem;
+            display: none;
+            object-fit: cover;
+        }
+
+        /* --- AI Processing Visuals --- */
+        .ai-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.25rem;
+            background: linear-gradient(135deg, #6366f1, #a855f7);
+            color: white;
+            padding: 0.25rem 0.75rem;
+            border-radius: 2rem;
+            font-size: 0.75rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+        }
+
+        .processing-steps {
+            display: none; /* Hidden by default */
+            margin-top: 1.5rem;
+            background: #f1f5f9;
+            padding: 1rem;
+            border-radius: 0.5rem;
+        }
+
+        .step {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 0.5rem;
+            opacity: 0.5;
+            transition: opacity 0.3s;
+        }
+
+        .step.active {
+            opacity: 1;
+            font-weight: 600;
+            color: var(--primary);
+        }
+
+        .step.completed .icon {
+            background-color: var(--success);
+            color: white;
+        }
+
+        .icon {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background-color: #cbd5e1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.75rem;
+            color: var(--text-light);
+        }
+
+        /* --- Tracking Section --- */
+        .status-result {
+            margin-top: 1.5rem;
+            display: none;
+            animation: fadeIn 0.4s ease-out;
+        }
+
+        .timeline {
+            position: relative;
+            padding-left: 1.5rem;
+            border-left: 2px solid var(--border);
+        }
+
+        .timeline-item {
+            position: relative;
+            margin-bottom: 1.5rem;
+        }
+
+        .timeline-item::before {
+            content: '';
+            position: absolute;
+            left: -1.95rem;
+            top: 0.25rem;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: var(--border);
+            border: 2px solid white;
+        }
+
+        .timeline-item.active::before {
+            background: var(--primary);
+            box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.2);
+        }
+
+        .timeline-date {
+            font-size: 0.8rem;
+            color: var(--text-light);
+        }
+
+        /* --- Stats Sidebar --- */
+        .stat-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 0.75rem 0;
+            border-bottom: 1px solid var(--border);
+        }
+        .stat-val {
+            font-weight: 700;
+        }
+
+        /* --- Toast Notifications --- */
+        #toast-container {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 1000;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .toast {
+            background: var(--surface);
+            border-left: 4px solid var(--primary);
+            padding: 1rem 1.5rem;
+            border-radius: 4px;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            min-width: 300px;
+            transform: translateX(120%);
+            transition: transform 0.3s ease-out;
+        }
+
+        .toast.show {
+            transform: translateX(0);
+        }
+
+        .toast.success { border-left-color: var(--success); }
+        .toast.error { border-left-color: var(--danger); }
+
+        /* Keyframes */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        footer {
+            background: var(--text-main);
+            color: white;
+            text-align: center;
+            padding: 2rem;
+            margin-top: auto;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Header -->
+    <header>
+        <div class="logo">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18"/><path d="M5 21V7l8-4 8 4v14"/><path d="M8 21v-2a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+            CivicConnect
+        </div>
+        <nav>
+            <a href="#" onclick="showSection('submit')" class="active" id="nav-submit">Report Issue</a>
+            <a href="#" onclick="showSection('track')" id="nav-track">Track Status</a>
+        </nav>
+    </header>
+
+    <!-- Main Content -->
+    <main>
+        <!-- Left Column: Dynamic Content -->
+        <section id="content-area">
+            
+            <!-- SUBMIT GRIEVANCE VIEW -->
+            <div id="view-submit">
+                <div class="card">
+                    <div class="ai-badge">
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg>
+                        AI-Powered Auto Triage Active
+                    </div>
+                    <h2>Submit a New Grievance</h2>
+                    <p>Describe the issue. Our system will automatically categorize and prioritize it for resolution.</p>
+                    
+                    <form id="grievanceForm">
+                        <div class="form-group">
+                            <label>Full Name</label>
+                            <input type="text" id="userName" placeholder="e.g. John Doe" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>Location / Address</label>
+                            <input type="text" id="location" placeholder="e.g. 123 Main St, Near City Center" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Issue Category</label>
+                            <select id="category" required>
+                                <option value="" disabled selected>Select Category (Optional: AI can detect)</option>
+                                <option value="Roads">Roads & Potholes</option>
+                                <option value="Sanitation">Garbage & Sanitation</option>
+                                <option value="Water">Water Supply</option>
+                                <option value="Electricity">Street Lights / Power</option>
+                                <option value="Other">Other</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Description of Issue</label>
+                            <textarea id="description" rows="5" placeholder="Describe the problem in detail. Keywords like 'dangerous', 'leaking', or 'blocked' help us prioritize." required></textarea>
+                            <small style="color: var(--text-light)">Be specific for faster resolution.</small>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Evidence (Image)</label>
+                            <div class="file-upload-wrapper" onclick="document.getElementById('fileInput').click()">
+                                <input type="file" id="fileInput" accept="image/*" hidden onchange="previewImage(event)">
+                                <span style="color: var(--primary);">Click to upload</span> or drag and drop
+                                <div id="preview-container">
+                                    <img id="file-preview" src="" alt="Preview">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Auto-Resolution Visualization -->
+                        <div id="processing-ui" class="processing-steps">
+                            <div class="step active" id="step-1">
+                                <div class="icon">1</div>
+                                <span>Analyzing text content...</span>
+                            </div>
+                            <div class="step" id="step-2">
+                                <div class="icon">2</div>
+                                <span>Assigning Priority & Department...</span>
+                            </div>
+                            <div class="step" id="step-3">
+                                <div class="icon">3</div>
+                                <span>Generating Ticket ID...</span>
+                            </div>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary btn-block" id="submitBtn">
+                            Submit Grievance
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- TRACK STATUS VIEW -->
+            <div id="view-track" style="display: none;">
+                <div class="card">
+                    <h2>Track Your Grievance</h2>
+                    <p>Enter your Ticket ID to see the current status and resolution progress.</p>
+                    
+                    <div style="display: flex; gap: 10px; margin-bottom: 2rem;">
+                        <input type="text" id="ticketInput" placeholder="Enter Ticket ID (e.g. #GRV-8392)" style="text-transform: uppercase;">
+                        <button class="btn btn-primary" onclick="trackGrievance()">Search</button>
+                    </div>
+
+                    <div id="status-result" class="status-result">
+                        <!-- Dynamic Result populated by JS -->
+                    </div>
+                </div>
+            </div>
+
+        </section>
+
+        <!-- Right Column: Sidebar Stats -->
+        <aside>
+            <div class="card">
+                <h3>Live City Stats</h3>
+                <div class="stat-row">
+                    <span>Pending Issues</span>
+                    <span class="stat-val" style="color: var(--warning)">124</span>
+                </div>
+                <div class="stat-row">
+                    <span>Resolved Today</span>
+                    <span class="stat-val" style="color: var(--success)">45</span>
+                </div>
+                <div class="stat-row">
+                    <span>Avg. Resolve Time</span>
+                    <span class="stat-val">4h 12m</span>
+                </div>
+            </div>
+
+            <div class="card">
+                <h3>Recent Resolutions</h3>
+                <div id="recent-feed">
+                    <!-- Feed items -->
+                    <div style="margin-bottom: 1rem; border-bottom: 1px solid var(--border); padding-bottom: 0.5rem;">
+                        <div style="font-size: 0.85rem; font-weight: 600;">Pothole on 5th Ave</div>
+                        <div style="font-size: 0.75rem; color: var(--text-light);">Resolved by Public Works</div>
+                    </div>
+                    <div style="margin-bottom: 1rem; border-bottom: 1px solid var(--border); padding-bottom: 0.5rem;">
+                        <div style="font-size: 0.85rem; font-weight: 600;">Street Light Flickering</div>
+                        <div style="font-size: 0.75rem; color: var(--text-light);">Resolved by Electric Dept</div>
+                    </div>
+                    <div style="font-size: 0.85rem; font-weight: 600;">Garbage Collection Missed</div>
+                    <div style="font-size: 0.75rem; color: var(--text-light);">Resolved by Sanitation</div>
+                </div>
+            </div>
+        </aside>
+    </main>
+
+    <!-- Toast Container -->
+    <div id="toast-container"></div>
+
+    <footer>
+        <p>&copy; 2023 CivicConnect Municipal Corporation. Empowering Citizens.</p>
+    </footer>
+
+    <script>
+        // --- State Management (Simulated Database) ---
+        // In a real app, this would be server-side. Here we use LocalStorage/Memory.
+        let grievances = JSON.parse(localStorage.getItem('grievances')) || [];
+
+        // --- Navigation Logic ---
+        function showSection(sectionId) {
+            // Hide all views
+            document.getElementById('view-submit').style.display = 'none';
+            document.getElementById('view-track').style.display = 'none';
+            
+            // Reset Nav Active State
+            document.getElementById('nav-submit').classList.remove('active');
+            document.getElementById('nav-track').classList.remove('active');
+
+            // Show selected
+            document.getElementById(`view-${sectionId}`).style.display = 'block';
+            document.getElementById(`nav-${sectionId}`).classList.add('active');
+        }
+
+        // --- Image Preview Logic ---
+        function previewImage(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const img = document.getElementById('file-preview');
+                    img.src = e.target.result;
+                    img.style.display = 'block';
+                }
+                reader.readAsDataURL(file);
+            }
+        }
+
+        // --- Auto-Resolution & Form Submission Logic ---
+        document.getElementById('grievanceForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+
+            const submitBtn = document.getElementById('submitBtn');
+            const processingUI = document.getElementById('processing-ui');
+            const userName = document.getElementById('userName').value;
+            const location = document.getElementById('location').value;
+            const category = document.getElementById('category').value;
+            const description = document.getElementById('description').value;
+            const date = new Date().toLocaleDateString();
+
+            // Lock UI
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = 'Processing...';
+            processingUI.style.display = 'block';
+
+            // SIMULATION: Step 1 - Analyze
+            setTimeout(() => {
+                document.getElementById('step-1').classList.add('completed');
+                document.getElementById('step-1').querySelector('div').innerHTML = '✓';
+                
+                // SIMULATION: Step 2 - Auto-Triage Logic
+                const analysis = performAutoAnalysis(category, description);
+                
+                document.getElementById('step-2').classList.add('active', 'completed');
+                document.getElementById('step-2').querySelector('span').innerText = `Assigned: ${analysis.detectedDept} (Priority: ${analysis.priority})`;
+                document.getElementById('step-2').querySelector('div').innerHTML = '✓';
+
+                // SIMULATION: Step 3 - Generate Ticket
+                setTimeout(() => {
+                    const ticketId = 'GRV-' + Math.floor(1000 + Math.random() * 9000);
+                    
+                    document.getElementById('step-3').classList.add('active', 'completed');
+                    document.getElementById('step-3').querySelector('div').innerHTML = '✓';
+
+                    // Create Object
+                    const newGrievance = {
+                        id: ticketId,
+                        name: userName,
+                        location: location,
+                        category: analysis.detectedDept, // Use AI detected category
+                        priority: analysis.priority,
+                        description: description,
+                        status: 'Submitted',
+                        date: date,
+                        timeline: [
+                            { title: 'Grievance Submitted', date: new Date().toLocaleString(), status: 'completed' },
+                            { title: 'Auto-Assigned to ' + analysis.detectedDept, date: new Date().toLocaleString(), status: 'active' }
+                        ]
+                    };
+
+                    // Save to LocalStorage
+                    grievances.unshift(newGrievance); // Add to top
+                    localStorage.setItem('grievances', JSON.stringify(grievances));
+
+                    // Success UI
+                    showToast(`Success! Ticket ${ticketId} created.`, 'success');
+                    
+                    // Reset Form
+                    setTimeout(() => {
+                        document.getElementById('grievanceForm').reset();
+                        document.getElementById('file-preview').style.display = 'none';
+                        processingUI.style.display = 'none';
+                        submitBtn.disabled = false;
+                        submitBtn.innerHTML = 'Submit Grievance';
+                        
+                        // Switch to tracking view automatically
+                        showSection('track');
+                        document.getElementById('ticketInput').value = ticketId;
+                        trackGrievance(); // Auto show result
+                    }, 1500);
+
+                }, 1500);
+
+            }, 1500);
+        });
+
+        // --- AI Auto-Triage Logic ---
+        function performAutoAnalysis(userCategory, text) {
+            const lowerText = text.toLowerCase();
+            let detectedDept = userCategory;
+            let priority = "Normal";
+
+            // If user didn't select, try to guess
+            if (detectedDept === "" || detectedDept === "Other") {
+                if (lowerText.includes('road') || lowerText.includes('pothole') || lowerText.includes('traffic')) detectedDept = "Roads";
+                else if (lowerText.includes('water') || lowerText.includes('leak') || lowerText.includes('pipe')) detectedDept = "Water";
+                else if (lowerText.includes('light') || lowerText.includes('electric')) detectedDept = "Electricity";
+                else if (lowerText.includes('garbage') || lowerText.includes('smell') || lowerText.includes('trash')) detectedDept = "Sanitation";
+                else detectedDept = "General Administration";
+            }
+
+            // Priority Keywords
+            const urgentKeywords = ['emergency', 'fire', 'dangerous', 'blocked', 'overflow', 'accident', 'urgent'];
+            const highKeywords = ['broken', 'large', 'heavy', 'no water', 'days'];
+
+            if (urgentKeywords.some(word => lowerText.includes(word))) {
+                priority = "Critical (Immediate Action Required)";
+            } else if (highKeywords.some(word => lowerText.includes(word))) {
+                priority = "High";
+            }
+
+            return { detectedDept, priority };
+        }
+
+        // --- Tracking Logic ---
+        function trackGrievance() {
+            const input = document.getElementById('ticketInput').value.trim().toUpperCase();
+            const resultDiv = document.getElementById('status-result');
+            
+            if (!input) {
+                showToast("Please enter a Ticket ID", "error");
+                return;
+            }
+
+            const found = grievances.find(g => g.id === input);
+
+            if (found) {
+                // Color code based on status
+                const statusColor = found.status === 'Resolved' ? 'var(--success)' : 
+                                    found.priority.includes('Critical') ? 'var(--danger)' : 'var(--primary)';
+
+                // Build Timeline HTML
+                let timelineHtml = found.timeline.map(item => `
+                    <div class="timeline-item ${item.status}">
+                        <div style="font-weight:600">${item.title}</div>
+                        <div class="timeline-date">${item.date}</div>
+                    </div>
+                `).join('');
+
+                resultDiv.innerHTML = `
+                    <div style="border-bottom: 1px solid var(--border); padding-bottom: 1rem; margin-bottom: 1rem;">
+                        <div style="display:flex; justify-content:space-between; align-items:start;">
+                            <div>
+                                <h3 style="margin:0">${found.category} Issue</h3>
+                                <small style="color:var(--text-light)">ID: ${found.id}</small>
+                            </div>
+                            <span style="background: #f1f5f9; padding: 4px 8px; border-radius: 4px; font-size: 0.8rem; font-weight:600; color: ${statusColor}">
+                                ${found.priority}
+                            </span>
+                        </div>
+                        <p style="margin-top:0.5rem; font-size: 0.95rem;">${found.description}</p>
+                        <div style="margin-top: 0.5rem; font-weight: 600; color: ${statusColor}">Current Status: ${found.status}</div>
+                    </div>
+                    
+                    <h4>Resolution Timeline</h4>
+                    <div class="timeline">
+                        ${timelineHtml}
+                    </div>
+                    
+                    <div style="margin-top: 1.5rem; text-align: right;">
+                         <button class="btn" style="border: 1px solid var(--border)" onclick="simulateAdminUpdate('${found.id}')">Simulate Admin Update</button>
+                    </div>
+                `;
+                resultDiv.style.display = 'block';
+            } else {
+                resultDiv.innerHTML = `<div style="text-align:center; padding: 2rem; color: var(--text-light)">No ticket found with ID <b>${input}</b>.</div>`;
+                resultDiv.style.display = 'block';
+            }
+        }
+
+        // --- Helper: Simulate Admin Update for Demo Purposes ---
+        function simulateAdminUpdate(id) {
+            const index = grievances.findIndex(g => g.id === id);
+            if (index !== -1) {
+                const g = grievances[index];
+                if (g.status === 'Resolved') {
+                    showToast("This case is already closed.", "success");
+                    return;
+                }
+                
+                // Move to next stage
+                g.status = 'Resolved';
+                g.timeline.push({
+                    title: 'Issue Resolved by Officer',
+                    date: new Date().toLocaleString(),
+                    status: 'active'
+                });
+                
+                localStorage.setItem('grievances', JSON.stringify(grievances));
+                trackGrievance(); // Refresh UI
+                showToast("Case updated to Resolved!", "success");
+                
+                // Update Recent Feed in Sidebar
+                const feed = document.getElementById('recent-feed');
+                const newItem = document.createElement('div');
+                newItem.style.marginBottom = '1rem';
+                newItem.style.borderBottom = '1px solid var(--border)';
+                newItem.style.paddingBottom = '0.5rem';
+                newItem.innerHTML = `
+                    <div style="font-size: 0.85rem; font-weight: 600;">${g.category} near ${g.location}</div>
+                    <div style="font-size: 0.75rem; color: var(--text-light);">Just Now</div>
+                `;
+                feed.insertBefore(newItem, feed.firstChild);
+            }
+        }
+
+        // --- Toast Notification System ---
+        function showToast(message, type = 'success') {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            
+            const icon = type === 'success' ? '✓' : '⚠';
+            
+            toast.innerHTML = `
+                <div style="font-weight:bold; font-size:1.2rem">${icon}</div>
+                <div>${message}</div>
+            `;
+            
+            container.appendChild(toast);
+            
+            // Trigger animation
+            requestAnimationFrame(() => {
+                toast.classList.add('show');
+            });
+
+            // Remove after 3 seconds
+            setTimeout(() => {
+                toast.classList.remove('show');
+                setTimeout(() => {
+                    toast.remove();
+                }, 300);
+            }, 3000);
+        }
+
+    </script>
+</body>
+</html>
